@@ -1,7 +1,9 @@
-type AnimeID = usize;
-use chrono::{NaiveDateTime, NaiveTime};
+use chrono::{NaiveDateTime};
 use regex::{Regex};
-type Diagnostic = String;
+
+#[path ="./types.rs"]
+mod types;
+use types::*;
 
 #[derive(Debug, PartialEq)]
 pub struct Episode {
@@ -46,17 +48,24 @@ impl Company {
     }
 }
 
+#[derive(Debug, PartialEq)]
 pub struct WatchEntry {
-    start_time: NaiveDateTime,
-    end_time: NaiveDateTime,
-    anime_id: AnimeID,
-    episode: Episode,
-    company: Option<Company>,
+    pub anime_id: AnimeID,   
+    pub start_time: NaiveDateTime,
+    pub end_time: NaiveDateTime,
+    pub episode: Episode,
+    pub company: Option<Company>,
 }
 
 impl WatchEntry {
-    pub fn new(time: NaiveDateTime, anime_id: AnimeID, episode: Episode, company: Option<Company>) -> Self {
-        Self { start_time: time, anime_id, episode, company }
+    pub fn new(anime_id: AnimeID, start_time: NaiveDateTime, end_time: NaiveDateTime, episode: Episode, company: Option<Company>) -> Self {
+        Self {
+            anime_id,
+            start_time,
+            end_time,
+            episode,
+            company,
+        }
     }
 }
 
