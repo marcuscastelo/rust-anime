@@ -5,7 +5,7 @@ use regex::{Regex};
 mod types;
 use types::*;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub struct Episode {
     number: i32, //TODO: support different episode types (e.g. "1.5", "[1 -> 5]", "1 -> 5", "[1,2,3,4,5]", etc.)
 }
@@ -17,7 +17,8 @@ impl Episode {
     } 
 }
 
-#[derive(Debug, PartialEq)]
+
+#[derive(Debug, PartialEq, Clone)]
 pub struct Company {
     names: Vec<String>
 }
@@ -48,7 +49,7 @@ impl Company {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct WatchEntry {
     pub anime_id: AnimeID,   
     pub start_time: NaiveDateTime,
@@ -68,9 +69,6 @@ impl WatchEntry {
         }
     }
 }
-
-
-
 
 #[cfg(test)]
 mod tests {
