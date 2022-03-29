@@ -11,7 +11,7 @@ pub struct Episode {
 }
 
 impl Episode {
-    pub fn from_str(ep_str: &str) -> Result<Self, Diagnostic> {
+    pub fn from(ep_str: &str) -> Result<Self, Diagnostic> {
         let number = ep_str.parse().map_err(|_| format!("Invalid episode number: {}", ep_str))?;
         Ok(Self { number })
     } 
@@ -99,33 +99,33 @@ mod tests {
 
     #[test]
     fn episode_from_str() {
-        let episode = Episode::from_str("1").unwrap();
+        let episode = Episode::from("1").unwrap();
         let expected = Episode { number: 1 };
         assert_eq!(episode, expected);
 
-        let episode = Episode::from_str("01").unwrap();
+        let episode = Episode::from("01").unwrap();
         let expected = Episode { number: 1 };
         assert_eq!(episode, expected);
 
-        let episode = Episode::from_str("001").unwrap();
+        let episode = Episode::from("001").unwrap();
         let expected = Episode { number: 1 };
         assert_eq!(episode, expected);
 
-        let episode = Episode::from_str("-1").unwrap();
+        let episode = Episode::from("-1").unwrap();
         let expected = Episode { number: -1 };
         assert_eq!(episode, expected);
 
-        let episode = Episode::from_str("-01").unwrap();
+        let episode = Episode::from("-01").unwrap();
         let expected = Episode { number: -1 };
         assert_eq!(episode, expected);
 
-        let episode = Episode::from_str("a");
+        let episode = Episode::from("a");
         assert!(episode.is_err());
 
-        let episode = Episode::from_str("1a");
+        let episode = Episode::from("1a");
         assert!(episode.is_err());
 
-        let episode = Episode::from_str("1.1");
+        let episode = Episode::from("1.1");
         assert!(episode.is_err());
     }
 }

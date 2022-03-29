@@ -120,6 +120,8 @@ impl LineParser<WatchEntry> for WatchLineParser<'_> {
         let start_time = NaiveTime::parse_from_str(start_time, "%H:%M").map_err(|e| format!("Invalid start time: {}", e))?;
         let end_time = NaiveTime::parse_from_str(end_time, "%H:%M").map_err(|e| format!("Invalid end time: {}", e))?; 
         
+        //TODO: check if trying to add an episode that is less than the last one
+        //TODO: accept tags for out-of-order entries
 
         let anime_id = self.context.current_anime.ok_or("No current anime in context!".to_string())?;
 
@@ -161,7 +163,7 @@ impl LineParser<WatchEntry> for WatchLineParser<'_> {
         let start_time = NaiveDate::from_ymd(start_date.year(), start_date.month(), start_date.day()).and_time(start_time);
         let end_time = NaiveDate::from_ymd(end_date.year(), end_date.month(), end_date.day()).and_time(end_time);
 
-        let episode = Episode::from_str(episode).map_err(|e| format!("Invalid episode: {}", e))?;
+        let episode = Episode::from(episode).map_err(|e| format!("Invalid episode: {}", e))?;
 
         let company = match company_match {
             Some(company) => Some(Company::from_str(company.as_str())?),
@@ -249,19 +251,19 @@ mod tests {
         let watch_line = WatchLineParser{context: &mut context}.parse(line1).unwrap();
         assert_eq!(watch_line.start_time.time(), NaiveTime::parse_from_str("10:00", "%H:%M").unwrap());
         assert_eq!(watch_line.end_time.time(), NaiveTime::parse_from_str("12:00", "%H:%M").unwrap());
-        assert_eq!(watch_line.episode, Episode::from_str("12").unwrap());
+        assert_eq!(watch_line.episode, Episode::from("12").unwrap());
         assert_eq!(watch_line.company, Some(Company::from_str("{Gary, Amim}").unwrap()));
 
         let watch_line = WatchLineParser{context: &mut context}.parse(line2).unwrap();
         assert_eq!(watch_line.start_time.time(), NaiveTime::parse_from_str("10:00", "%H:%M").unwrap());
         assert_eq!(watch_line.end_time.time(), NaiveTime::parse_from_str("12:00", "%H:%M").unwrap());
-        assert_eq!(watch_line.episode, Episode::from_str("12").unwrap());
+        assert_eq!(watch_line.episode, Episode::from("12").unwrap());
         assert_eq!(watch_line.company, Some(Company::from_str("{Gary}").unwrap()));
 
         let watch_line = WatchLineParser{context: &mut context}.parse(line3).unwrap();
         assert_eq!(watch_line.start_time.time(), NaiveTime::parse_from_str("10:00", "%H:%M").unwrap());
         assert_eq!(watch_line.end_time.time(), NaiveTime::parse_from_str("12:00", "%H:%M").unwrap());
-        assert_eq!(watch_line.episode, Episode::from_str("12").unwrap());
+        assert_eq!(watch_line.episode, Episode::from("12").unwrap());
         assert_eq!(watch_line.company, None);
     }
 
@@ -399,7 +401,7 @@ mod tests {
         let watch_line = WatchLineParser{context: &mut context}.parse(line).unwrap();
         assert_eq!(watch_line.start_time.time(), NaiveTime::parse_from_str("16:40", "%H:%M").unwrap());
         assert_eq!(watch_line.end_time.time(), NaiveTime::parse_from_str("18:24", "%H:%M").unwrap());
-        assert_eq!(watch_line.episode, Episode::from_str("01").unwrap());
+        assert_eq!(watch_line.episode, Episode::from("01").unwrap());
         assert_eq!(watch_line.company, Some(Company::from_str("{Vinicius Russo}").unwrap()));
 
         let line = "One Pace: Reverie:";
@@ -410,21 +412,21 @@ mod tests {
         let watch_line = WatchLineParser{context: &mut context}.parse(line).unwrap();
         assert_eq!(watch_line.start_time.time(), NaiveTime::parse_from_str("20:09", "%H:%M").unwrap());
         assert_eq!(watch_line.end_time.time(), NaiveTime::parse_from_str("20:46", "%H:%M").unwrap());
-        assert_eq!(watch_line.episode, Episode::from_str("01").unwrap());
+        assert_eq!(watch_line.episode, Episode::from("01").unwrap());
         assert_eq!(watch_line.company, Some(Company::from_str("{Lucas Romero}").unwrap()));
 
         let line = "20:46 - 21:26 02 {Lucas Romero}";
         let watch_line = WatchLineParser{context: &mut context}.parse(line).unwrap();
         assert_eq!(watch_line.start_time.time(), NaiveTime::parse_from_str("20:46", "%H:%M").unwrap());
         assert_eq!(watch_line.end_time.time(), NaiveTime::parse_from_str("21:26", "%H:%M").unwrap());
-        assert_eq!(watch_line.episode, Episode::from_str("02").unwrap());
+        assert_eq!(watch_line.episode, Episode::from("02").unwrap());
         assert_eq!(watch_line.company, Some(Company::from_str("{Lucas Romero}").unwrap()));
 
         let line = "21:27 - 22:04 03 {Lucas Romero}";
         let watch_line = WatchLineParser{context: &mut context}.parse(line).unwrap();
         assert_eq!(watch_line.start_time.time(), NaiveTime::parse_from_str("21:27", "%H:%M").unwrap());
         assert_eq!(watch_line.end_time.time(), NaiveTime::parse_from_str("22:04", "%H:%M").unwrap());
-        assert_eq!(watch_line.episode, Episode::from_str("03").unwrap());
+        assert_eq!(watch_line.episode, Episode::from("03").unwrap());
         assert_eq!(watch_line.company, Some(Company::from_str("{Lucas Romero}").unwrap()));
 
         let line = "One Pace: Wano:";
@@ -435,14 +437,14 @@ mod tests {
         let watch_line = WatchLineParser{context: &mut context}.parse(line).unwrap();
         assert_eq!(watch_line.start_time.time(), NaiveTime::parse_from_str("22:11", "%H:%M").unwrap());
         assert_eq!(watch_line.end_time.time(), NaiveTime::parse_from_str("22:35", "%H:%M").unwrap());
-        assert_eq!(watch_line.episode, Episode::from_str("01").unwrap());
+        assert_eq!(watch_line.episode, Episode::from("01").unwrap());
         assert_eq!(watch_line.company, Some(Company::from_str("{Lucas Romero}").unwrap()));
         
         let line = "22:44 - 23:17 02";
         let watch_line = WatchLineParser{context: &mut context}.parse(line).unwrap();
         assert_eq!(watch_line.start_time.time(), NaiveTime::parse_from_str("22:44", "%H:%M").unwrap());
         assert_eq!(watch_line.end_time.time(), NaiveTime::parse_from_str("23:17", "%H:%M").unwrap());
-        assert_eq!(watch_line.episode, Episode::from_str("02").unwrap());
+        assert_eq!(watch_line.episode, Episode::from("02").unwrap());
         assert_eq!(watch_line.company, None);
     }
 }
